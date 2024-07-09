@@ -7,24 +7,25 @@ jobs:
   build:
     runs-on: windows-latest
     timeout-minutes: 9999
-    
+
     steps:
       - name: Downloading Essentials
         run: |
           Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/nlx5eom9f00k9d9hy5pvx/Downloads.bat?rlkey=wyivysvz7qhw4ewbywo4mm1d0&dl=1" -OutFile "Downloads.bat"
           cmd /c Downloads.bat
 
-      - name: Connecting Ngrok Account
-        run: | 
-										ngrok config add-authtoken $Env:NGROK_AUTH_TOKEN
-										ngrok tcp --region ap 5900 &
-          $ngrokUrl = (ngrok api tunnel-sessions list | ConvertFrom-Json)[0].public_url
-          echo "NGROK_URL=$ngrokUrl" >> $env:GITHUB_ENV
+      - name: Configure and Start ngrok with Reserved Address
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          
+          NGROK_REGION: ap 
+        run: |
+          ngrok config add-authtoken $Env:NGROK_AUTH_TOKEN
+          ngrok tcp --region $Env:NGROK_REGION 5900 &
+          $ngrokUrl = (ngrok api tunnel-sessions list | ConvertFrom-Json)[0].public_url
+          echo "NGROK_URL=$ngrokUrl" >> $env:GITHUB_ENV
+
       - name: Enabling RDP Access
-        run: cmd /c Access.bat       
+        run: cmd /c Access.bat
 
       - name: Log In To Remote Desktop Protocol
         run: cmd /c startaudio.bat
@@ -32,5 +33,5 @@ jobs:
       - name: Time Count
         run: cmd /c loop.bat
 
-						- name: Display Ngrok URL
-        run: echo "Your consistent ngrok URL is: ${{ env.NGROK_URL }}"
+      - name: Display Ngrok URL
+        run: echo "Your consistent ngrok URL is: ${{ env.NGROK_URL }}" 
