@@ -35,3 +35,11 @@ jobs:
 
       - name: Display Ngrok URL
         run: echo "Your consistent ngrok URL is: ${{ env.NGROK_URL }}" 
+
+- name: Fail with Custom Message
+  run: |
+    if [ ! -e "some_important_file" ]; then
+      echo "::error::File 'some_important_file' not found!"
+      exit 1
+    fi 
+
